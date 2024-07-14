@@ -1,4 +1,5 @@
 import { load, text, type Element } from "cheerio";
+import { parseIntFromCheerioEl } from "../utils";
 
 export async function scrapeUserDiary(name: string, page = 1) {
   const r = await fetch(
@@ -15,10 +16,7 @@ export async function scrapeUserDiary(name: string, page = 1) {
   const pages = html(".paginate-pages .paginate-page");
   const hasMorePages = pages.length > 0;
 
-  let lastPage = page;
-  if (hasMorePages) {
-    lastPage = parseInt(pages.last().text());
-  }
+  const lastPage = parseIntFromCheerioEl(pages.last());
 
   const films: { url: string; title: string; rating: number }[] = [];
   const titles = html(".td-film-details .headline-3 a");
@@ -73,7 +71,7 @@ function parseRatingClass(ratingClass: string): number {
 
   let rating = 0;
   try {
-    rating = parseInt(rt) || 10;
+    rating = parseInt(rt) || 0;
   } catch (err) {}
 
   return rating;

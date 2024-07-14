@@ -1,4 +1,5 @@
-import { load, text } from "cheerio";
+import { load } from "cheerio";
+import type { Network } from "../../types";
 
 export async function scrapeNetwork(
   name: string,
@@ -8,24 +9,23 @@ export async function scrapeNetwork(
   const followingPages = Math.ceil(followingCount / 25);
   const followerPages = Math.ceil(followerCount / 25);
 
-  const p1 = Promise.all(
-    new Array(followerPages)
-      .fill(null)
-      .map((_, i) => scrapeFollowerPage(name, i + 1, "followers")),
-  );
-
-  const p2 = Promise.all(
-    new Array(followingPages)
-      .fill(null)
-      .map((_, i) => scrapeFollowerPage(name, i + 1, "following")),
-  );
-
-  const [followers, following] = await Promise.all([p1, p2]);
+  const [followers, following] = await Promise.all([
+    Promise.all(
+      new Array(followerPages)
+        .fill(null)
+        .map((_, i) => scrapeFollowerPage(name, i + 1, "followers")),
+    ),
+    Promise.all(
+      new Array(followingPages)
+        .fill(null)
+        .map((_, i) => scrapeFollowerPage(name, i + 1, "following")),
+    ),
+  ]);
 
   return {
     followers: followers.flat(),
     following: following.flat(),
-  };
+  } satisfies Network;
 }
 
 async function scrapeFollowerPage(
@@ -42,7 +42,6 @@ async function scrapeFollowerPage(
   }
 
   const html = load(await r.text());
-
   const links = html(".person-summary .title-3 a");
 
   const users: string[] = [];
