@@ -21,8 +21,8 @@ export async function GET(
 
   const [profile, diary] = await Promise.all([
     scrapeUserProfile(username),
-    scrapeUserDiary(username),
+    // scrapeUserDiary(username),
   ]);
 
-  return NextResponse.json({ profile, diary });
+  return NextResponse.json({ profile });
 }

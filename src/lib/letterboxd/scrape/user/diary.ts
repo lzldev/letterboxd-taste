@@ -73,11 +73,8 @@ function parseRatingClass(ratingClass: string): number {
 
   let rating = 0;
   try {
-    rating = parseInt(rt, 10);
+    rating = parseInt(rt) || 10;
   } catch (err) {}
-  if (Number.isNaN(rating)) {
-    rating = 0;
-  }
 
   return rating;
 }
