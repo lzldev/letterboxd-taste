@@ -10,18 +10,17 @@ export async function scrapeGenres(name: string) {
   }
 
   const html = load(await r.text());
-  const els = html(".text-slug", "#tab-genres");
+  const els = html("#tab-genres .text-slug");
   const genres = new Array<string>();
 
   for (const el of els) {
-    const t = text(el.children);
     const ref = el.attribs.href ?? "";
 
     if (!ref.startsWith("/films/genre")) {
       continue;
     }
 
-    genres.push(t);
+    genres.push(text(el.children));
   }
 
   return {

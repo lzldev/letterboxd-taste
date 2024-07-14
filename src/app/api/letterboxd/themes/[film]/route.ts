@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { scrapeGenres } from "~/lib/letterboxd/scrape/genres";
+import { scrapeThemes } from "~/lib/letterboxd/scrape/themes";
 
 export async function GET(
   _req: NextRequest,
@@ -16,11 +16,11 @@ export async function GET(
     );
   }
 
-  const genres = await scrapeGenres(film).catch((err) => {
+  const themes = await scrapeThemes(film).catch((err) => {
     console.error(err);
   });
 
-  if (!genres) {
+  if (!themes) {
     return NextResponse.json(
       { error: "Film not Found" },
       {
@@ -29,5 +29,5 @@ export async function GET(
     );
   }
 
-  return NextResponse.json(genres);
+  return NextResponse.json(themes);
 }
