@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { api } from "~/trpc/react";
+import { ChannelListener } from "./ChannelListener";
 
 export function LatestPost() {
   const [latestPost] = api.post.getLatest.useSuspenseQuery();
@@ -44,6 +45,7 @@ export function LatestPost() {
         >
           {createPost.isPending ? "Submitting..." : "Submit"}
         </button>
+        <ChannelListener />
       </form>
     </div>
   );

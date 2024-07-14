@@ -24,5 +24,5 @@ export async function GET(
     // scrapeUserDiary(username),
   ]);
 
-  return NextResponse.json({ profile });
+  return NextResponse.json({ profile, time: new Date().getTime() });
 }
