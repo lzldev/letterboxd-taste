@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { scrapeNanogenres } from "~/lib/letterboxd/scrape/nanogenres";
+import { scrapeNanogenres } from "~/lib/letterboxd/scrape/film/nanogenres";
 
 export async function GET(
   _req: NextRequest,

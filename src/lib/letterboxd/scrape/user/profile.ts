@@ -13,20 +13,17 @@ export async function scrapeUserProfile(name: string) {
 
   const displayName = html(".displayname").text();
   const avatarUrl = html(".profile-avatar .avatar img").attr("src");
-  console.log(avatarUrl);
 
   const profileUrl = html(
     '[role="menuitem"][data-menuitem-trigger="clipboard"]',
   ).attr("data-clipboard-text");
   const userId = parseUserId(profileUrl);
 
-  const profile = {
+  return {
     userId,
     displayName,
     avatarUrl,
   };
-
-  return profile;
 }
 
 function parseUserId(profileUrl = "") {

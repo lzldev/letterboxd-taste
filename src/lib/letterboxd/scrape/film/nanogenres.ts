@@ -1,5 +1,3 @@
-//https://letterboxd.com/film/closer/nanogenres/
-
 import { load, text } from "cheerio";
 
 export async function scrapeNanogenres(name: string) {

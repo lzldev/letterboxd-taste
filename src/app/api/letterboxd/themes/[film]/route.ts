@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { scrapeThemes } from "~/lib/letterboxd/scrape/themes";
+import { scrapeThemes } from "~/lib/letterboxd/scrape/film/themes";
 
 export async function GET(
   _req: NextRequest,

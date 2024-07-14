@@ -25,8 +25,6 @@ export async function scrapeUserDiary(name: string, page = 1) {
 
   for (const link of titles) {
     const title = text(link.children);
-
-    //Get Rating Manually
     const ratingClass = ratingClassFromLink(link);
 
     /* Search Rating Span using Cheerio (~30x slower)
