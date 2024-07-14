@@ -10,3 +10,16 @@ export type Diary = {
   avgRating: number;
   films: DiaryEntry[];
 };
+
+export type FilmEntry = {
+  uri: string;
+  rating: number | null;
+  liked: boolean;
+};
+
+export type UserFilmsStats = {
+  films: FilmEntry[];
+  avg: number;
+  rated: number;
+  watched: number;
+};

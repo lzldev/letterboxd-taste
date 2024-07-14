@@ -1,8 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { scrapeUserDiary } from "~/lib/letterboxd/scrape/user/diary";
 import { scrapeUserFilms } from "~/lib/letterboxd/scrape/user/films";
-import { scrapeNetwork } from "~/lib/letterboxd/scrape/user/network";
-import { scrapeUserProfile } from "~/lib/letterboxd/scrape/user/profile";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -21,16 +18,9 @@ export async function GET(
     );
   }
 
-  const profile = await scrapeUserProfile(username);
-
-  const [network, films] = await Promise.all([
-    await scrapeNetwork(username, profile.following, profile.followers),
-    await scrapeUserFilms(username, profile.films),
-  ]);
+  const films = await scrapeUserFilms(username, 1);
 
   return NextResponse.json({
-    profile,
-    network,
     films,
   });
 }

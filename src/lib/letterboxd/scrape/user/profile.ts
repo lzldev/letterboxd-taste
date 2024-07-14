@@ -19,6 +19,7 @@ export async function scrapeUserProfile(name: string) {
   const avatarUrl = html(".profile-avatar .avatar img").attr("src");
   const stats = html(".profile-stats .value");
 
+  const films = parseIntFromCheerioEl(stats.first());
   const following = parseIntFromCheerioEl(stats[stats.length - 2]!.children);
   const followers = parseIntFromCheerioEl(stats.last());
 
@@ -33,6 +34,7 @@ export async function scrapeUserProfile(name: string) {
     username,
     displayName,
     avatarUrl,
+    films,
     followers,
     following,
   };

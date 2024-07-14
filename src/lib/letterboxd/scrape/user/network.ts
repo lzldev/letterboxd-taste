@@ -1,13 +1,15 @@
 import { load } from "cheerio";
 import type { Network } from "../../types";
 
+const USERS_PER_PAGE = 25;
+
 export async function scrapeNetwork(
   name: string,
   followingCount: number,
   followerCount: number,
 ) {
-  const followingPages = Math.ceil(followingCount / 25);
-  const followerPages = Math.ceil(followerCount / 25);
+  const followingPages = Math.ceil(followingCount / USERS_PER_PAGE);
+  const followerPages = Math.ceil(followerCount / USERS_PER_PAGE);
 
   const [followers, following] = await Promise.all([
     Promise.all(

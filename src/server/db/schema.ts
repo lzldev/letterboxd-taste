@@ -11,7 +11,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
-import type { Diary, Network } from "~/lib/letterboxd/types";
+import type { UserFilmsStats, Network } from "~/lib/letterboxd/types";
 
 /**
  * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
@@ -30,9 +30,9 @@ export const user = createTable(
     network: json("network")
       .$type<Network>()
       .default({ followers: [], following: [] }),
-    diary: json("diary")
-      .$type<Diary>()
-      .default({ avgRating: 0, films: [], total: 0 }),
+    filmStats: json("film_stats")
+      .$type<UserFilmsStats>()
+      .default({ avg: 0, watched: 0, films: [], rated: 0 }),
     updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
   },
   (table) => ({
