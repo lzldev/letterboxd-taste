@@ -11,7 +11,10 @@ export async function scrapeUserProfile(name: string) {
 
   const html = load(await r.text());
 
-  const displayName = html(".displayname").text();
+  const displayNameEl = html(".displayname");
+  const displayName = displayNameEl.text();
+  const username = displayNameEl.attr("title");
+
   const avatarUrl = html(".profile-avatar .avatar img").attr("src");
   const stats = html(".profile-stats .value");
 
@@ -33,6 +36,7 @@ export async function scrapeUserProfile(name: string) {
 
   return {
     userId,
+    username,
     displayName,
     avatarUrl,
     followers,
