@@ -3,10 +3,10 @@ export type Network = {
   followers: string[];
 };
 
-export type DiaryRating = { filmName: string; rating: number };
+export type DiaryEntry = { uri: string; rating: number; liked: boolean };
 
 export type Diary = {
   total: number;
   avgRating: number;
-  films: DiaryRating[];
+  films: DiaryEntry[];
 };

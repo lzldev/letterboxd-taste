@@ -1,5 +1,6 @@
 import { load, text, type Element } from "cheerio";
 import { parseIntFromCheerioEl } from "../utils";
+import { DiaryEntry } from "../../types";
 
 export async function scrapeUserDiary(name: string, page = 1) {
   const r = await fetch(
@@ -18,12 +19,17 @@ export async function scrapeUserDiary(name: string, page = 1) {
 
   const lastPage = parseIntFromCheerioEl(pages.last());
 
-  const films: { url: string; title: string; rating: number }[] = [];
+  const films: DiaryEntry[] = [];
   const titles = html(".td-film-details .headline-3 a");
 
   for (const link of titles) {
-    const title = text(link.children);
     const ratingClass = ratingClassFromLink(link);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    const liked = html(
+      ".edit-review-button",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+      link.parent!.parent!.parent as any,
+    ).data("liked") as boolean;
 
     /* Search Rating Span using Cheerio (~30x slower)
       const elems = html(".rating", link.parent!.parent!.parent).attr("class");
@@ -31,7 +37,9 @@ export async function scrapeUserDiary(name: string, page = 1) {
     */
 
     const rating = parseRatingClass(ratingClass) / 2;
-    films.push({ title, rating, url: link.attribs.href! });
+    const uri = parseFilmUri(link.attribs.href!);
+
+    films.push({ uri, rating, liked });
   }
 
   const isFirstPage = page === 1;
@@ -41,7 +49,6 @@ export async function scrapeUserDiary(name: string, page = 1) {
         .fill(0)
         .map((_, i) => scrapeUserDiary(name, i + 2)),
     );
-
     films.push(...arr.flatMap((i) => i.films));
   }
 
@@ -63,6 +70,10 @@ function ratingClassFromLink(linkEl: Element): string {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     linkEl.parent!.parent!.next!.next!.next!.next!.children.at(3)!.children.at(1).attribs.class
   );
+}
+
+function parseFilmUri(href: string): string {
+  return href.split("/").at(3)!;
 }
 
 function parseRatingClass(ratingClass: string): number {
