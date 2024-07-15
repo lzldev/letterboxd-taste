@@ -47,10 +47,7 @@ export async function scrapeUserFilms(name: string, filmCount: number) {
   } satisfies UserFilmsStats;
 }
 
-export async function scrapeFilmPage(
-  name: string,
-  page = 1,
-): Promise<FilmEntry[]> {
+async function scrapeFilmPage(name: string, page = 1): Promise<FilmEntry[]> {
   const r = await fetch(`https://letterboxd.com/${name}/films/page/${page}`);
 
   if (r.status !== 200) {

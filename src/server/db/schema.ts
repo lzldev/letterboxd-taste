@@ -21,19 +21,23 @@ import type { UserFilmsStats, Network } from "~/lib/letterboxd/types";
  */
 export const createTable = pgTableCreator((name) => `letterbox-taste_${name}`);
 
-export const user = createTable(
+export const users = createTable(
   "users",
   {
     id: serial("id").primaryKey(),
-    username: varchar("name", { length: 100 }).notNull(),
+    username: varchar("name", { length: 100 }).notNull().unique(),
     displayName: varchar("displayName", { length: 100 }).notNull(),
     network: json("network")
+      .notNull()
       .$type<Network>()
       .default({ followers: [], following: [] }),
     filmStats: json("film_stats")
+      .notNull()
       .$type<UserFilmsStats>()
       .default({ avg: 0, watched: 0, films: [], rated: 0 }),
-    updatedAt: timestamp("updated_at").$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .$onUpdate(() => new Date()),
   },
   (table) => ({
     usernameIndex: index("user_username_idx").on(table.username),
@@ -61,7 +65,7 @@ export const films = createTable(
     id: serial("id").primaryKey(),
     title: varchar("title", { length: 100 }).notNull(),
     uri: varchar("uri", { length: 100 }).notNull().unique(),
-    genres: integer("genres_ids").references(() => genres.id),
+    genres: integer("genres_ids"),
   },
   (table) => ({
     filmUriIndex: index("film_uri_idx").on(table.uri),
