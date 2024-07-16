@@ -65,7 +65,10 @@ export const films = createTable(
     id: serial("id").primaryKey(),
     title: varchar("title", { length: 100 }).notNull(),
     uri: varchar("uri", { length: 100 }).notNull().unique(),
-    genres: integer("genres_ids"),
+    genres: integer("genres_ids")
+      .array()
+      .notNull()
+      .default(sql`ARRAY[]::integer[]`),
   },
   (table) => ({
     filmUriIndex: index("film_uri_idx").on(table.uri),

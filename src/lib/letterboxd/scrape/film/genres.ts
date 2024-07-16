@@ -1,6 +1,6 @@
 import { load, text } from "cheerio";
 
-export async function scrapeFilmGenres(name: string) {
+export async function scrapeFilm(name: string) {
   const r = await fetch(`https://letterboxd.com/film/${name}/genres/`);
 
   if (r.status !== 200) {
@@ -10,6 +10,7 @@ export async function scrapeFilmGenres(name: string) {
   }
 
   const html = load(await r.text());
+  const title = html(".filmtitle span").text();
   const els = html("#tab-genres .text-slug");
   const genres = new Array<string>();
 
@@ -24,6 +25,7 @@ export async function scrapeFilmGenres(name: string) {
   }
 
   return {
+    title,
     genres,
   };
 }

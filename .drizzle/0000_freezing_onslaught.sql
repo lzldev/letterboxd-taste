@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS "letterbox-taste_films" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"title" varchar(100) NOT NULL,
 	"uri" varchar(100) NOT NULL,
-	"genres_ids" integer,
+	"genres_ids" integer[] DEFAULT ARRAY[]::integer[] NOT NULL,
 	CONSTRAINT "letterbox-taste_films_uri_unique" UNIQUE("uri")
 );
 --> statement-breakpoint
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS "letterbox-taste_users" (
 	"name" varchar(100) NOT NULL,
 	"displayName" varchar(100) NOT NULL,
 	"network" json DEFAULT '{"followers":[],"following":[]}'::json NOT NULL,
-	"film_stats" json DEFAULT '{"avg":0,"watched":0,"films":[],"rated":0}'::json NOT NULL,
+	"film_stats" json DEFAULT '{"avgRating":0,"watched":0,"films":[],"rated":0,"liked":0}'::json NOT NULL,
 	"updated_at" timestamp NOT NULL,
 	CONSTRAINT "letterbox-taste_users_name_unique" UNIQUE("name")
 );

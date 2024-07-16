@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { scrapeFilmGenres } from "~/lib/letterboxd/scrape/film/genres";
+import { scrapeFilm } from "~/lib/letterboxd/scrape/film/genres";
 
 export async function GET(
   _req: NextRequest,
@@ -16,7 +16,7 @@ export async function GET(
     );
   }
 
-  const genres = await scrapeFilmGenres(film).catch((err) => {
+  const genres = await scrapeFilm(film).catch((err) => {
     console.error(err);
   });
 

@@ -1,5 +1,5 @@
 {
-  "id": "6f45a0c2-f7f4-434a-8118-2f0f752d8c26",
+  "id": "44d7da69-9927-435c-880a-d494466fb46e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -28,9 +28,10 @@
         },
         "genres_ids": {
           "name": "genres_ids",
-          "type": "integer",
+          "type": "integer[]",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "ARRAY[]::integer[]"
         }
       },
       "indexes": {
@@ -193,7 +194,7 @@
           "type": "json",
           "primaryKey": false,
           "notNull": true,
-          "default": "'{\"avg\":0,\"watched\":0,\"films\":[],\"rated\":0}'::json"
+          "default": "'{\"avgRating\":0,\"watched\":0,\"films\":[],\"rated\":0,\"liked\":0}'::json"
         },
         "updated_at": {
           "name": "updated_at",
