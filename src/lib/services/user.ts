@@ -7,9 +7,9 @@ import { scrapeNetwork } from "../letterboxd/scrape/user/network";
 
 const DAY_IN_MS = 86400000;
 
-export type User = Awaited<ReturnType<typeof getOrScrapeUser>>;
+export type User = Awaited<ReturnType<typeof ScrapeUser>>;
 
-export async function getOrScrapeUser(username: string) {
+export async function ScrapeUser(username: string) {
   const user = await db.query.users.findFirst({
     where: eq(users.username, username),
     columns: {
@@ -22,13 +22,13 @@ export async function getOrScrapeUser(username: string) {
     },
   });
   if (!user || new Date().getTime() - user.updatedAt.getTime() > DAY_IN_MS) {
-    return await upsertUser(username);
+    return await UpdateUser(username);
   }
 
   return user;
 }
 
-export async function upsertUser(username: string) {
+export async function UpdateUser(username: string) {
   const profile = await scrapeUserProfile(username);
   const films = await scrapeUserFilms(username, profile.films);
   const network = await scrapeNetwork(
@@ -72,7 +72,7 @@ type WalkedUser = Omit<User, "network"> & {
 
 const MAX_DEPTH = 1;
 
-export async function walkUserNetwork(
+export async function WalkUserNetwork(
   node: User,
   state: { userSet: Set<string> },
   depth = 0,
@@ -95,8 +95,8 @@ export async function walkUserNetwork(
       continue;
     }
 
-    const user = await getOrScrapeUser(follower);
-    network.followers.push(...(await walkUserNetwork(user, state, depth + 1)));
+    const user = await ScrapeUser(follower);
+    network.followers.push(...(await WalkUserNetwork(user, state, depth + 1)));
   }
 
   for (const follow of node.network.following) {
@@ -105,8 +105,8 @@ export async function walkUserNetwork(
       continue;
     }
 
-    const user = await getOrScrapeUser(follow);
-    network.following.push(...(await walkUserNetwork(user, state, depth + 1)));
+    const user = await ScrapeUser(follow);
+    network.following.push(...(await WalkUserNetwork(user, state, depth + 1)));
   }
 
   return [{ ...node, network }];
