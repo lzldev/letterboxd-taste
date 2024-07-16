@@ -5,7 +5,7 @@ import { sql } from "drizzle-orm";
 import {
   index,
   integer,
-  json,
+  jsonb,
   pgTableCreator,
   serial,
   timestamp,
@@ -28,11 +28,11 @@ export const users = createTable(
     id: serial("id").primaryKey(),
     username: varchar("name", { length: 100 }).notNull().unique(),
     displayName: varchar("displayName", { length: 100 }).notNull(),
-    network: json("network")
+    network: jsonb("network")
       .notNull()
       .$type<Network>()
       .default({ followers: [], following: [] }),
-    filmStats: json("film_stats")
+    filmStats: jsonb("film_stats")
       .notNull()
       .$type<UserFilmsStats>()
       .default({ avgRating: 0, watched: 0, films: [], rated: 0, liked: 0 }),
