@@ -34,7 +34,7 @@ export const users = createTable(
     filmStats: json("film_stats")
       .notNull()
       .$type<UserFilmsStats>()
-      .default({ avg: 0, watched: 0, films: [], rated: 0 }),
+      .default({ avgRating: 0, watched: 0, films: [], rated: 0, liked: 0 }),
     updatedAt: timestamp("updated_at")
       .notNull()
       .$onUpdate(() => new Date()),

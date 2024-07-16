@@ -7,6 +7,8 @@ import { scrapeNetwork } from "../letterboxd/scrape/user/network";
 
 const DAY_IN_MS = 86400000;
 
+export type User = Awaited<ReturnType<typeof getOrScrapeUser>>;
+
 export async function getOrScrapeUser(username: string) {
   const user = await db.query.users.findFirst({
     where: eq(users.username, username),
@@ -52,3 +54,60 @@ export async function upsertUser(username: string) {
     .returning();
 
   return user.at(0)!;
+}
+
+type WalkedNetwork = {
+  following: Connection[];
+  followers: Connection[];
+};
+
+type Connection = WalkedUser | UserRef;
+type UserRef = {
+  _ref: string;
+};
+
+type WalkedUser = Omit<User, "network"> & {
+  network?: WalkedNetwork;
+};
+
+const MAX_DEPTH = 1;
+
+export async function walkUserNetwork(
+  node: User,
+  state: { userSet: Set<string> },
+  depth = 0,
+): Promise<WalkedUser[]> {
+  state.userSet.add(node.username);
+  if (depth >= MAX_DEPTH) {
+    const n = node as unknown as WalkedUser;
+    delete n.network;
+    return [n];
+  }
+
+  const network: WalkedNetwork = {
+    followers: [],
+    following: [],
+  };
+
+  for (const follower of node.network.followers) {
+    if (state.userSet.has(follower)) {
+      network.followers.push({ _ref: follower } satisfies UserRef);
+      continue;
+    }
+
+    const user = await getOrScrapeUser(follower);
+    network.followers.push(...(await walkUserNetwork(user, state, depth + 1)));
+  }
+
+  for (const follow of node.network.following) {
+    if (state.userSet.has(follow)) {
+      network.following.push({ _ref: follow } satisfies UserRef);
+      continue;
+    }
+
+    const user = await getOrScrapeUser(follow);
+    network.following.push(...(await walkUserNetwork(user, state, depth + 1)));
+  }
+
+  return [{ ...node, network }];
+}

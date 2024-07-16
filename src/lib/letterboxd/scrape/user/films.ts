@@ -28,22 +28,26 @@ export async function scrapeUserFilms(name: string, filmCount: number) {
       return {
         total: pv.total + cv.rating,
         rated: pv.rated + 1,
+        liked: cv.liked ? pv.liked + 1 : pv.liked,
       };
     },
     {
       total: 0,
       rated: 0,
+      liked: 0,
     } as {
       total: number;
       rated: number;
+      liked: number;
     },
   );
 
   return {
     films,
     watched: films.length,
+    liked: totalRating.liked,
     rated: totalRating.rated,
-    avg: totalRating.total / totalRating.rated,
+    avgRating: totalRating.total / totalRating.rated,
   } satisfies UserFilmsStats;
 }
 

@@ -19,7 +19,8 @@ export type FilmEntry = {
 
 export type UserFilmsStats = {
   films: FilmEntry[];
-  avg: number;
+  avgRating: number;
   rated: number;
+  liked: number;
   watched: number;
 };
