@@ -24,3 +24,34 @@ export type UserFilmsStats = {
   liked: number;
   watched: number;
 };
+
+// number[27]
+export type TasteVector = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];

@@ -1,0 +1,1 @@
+ALTER TABLE "letterbox-taste_users" ADD COLUMN "taste_profile" vector(27);

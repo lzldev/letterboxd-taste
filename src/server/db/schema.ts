@@ -10,6 +10,7 @@ import {
   serial,
   timestamp,
   varchar,
+  vector,
 } from "drizzle-orm/pg-core";
 import type { UserFilmsStats, Network } from "~/lib/letterboxd/types";
 
@@ -35,6 +36,9 @@ export const users = createTable(
       .notNull()
       .$type<UserFilmsStats>()
       .default({ avgRating: 0, watched: 0, films: [], rated: 0, liked: 0 }),
+    tasteProfile: vector("taste_profile", {
+      dimensions: 27,
+    }),
     updatedAt: timestamp("updated_at")
       .notNull()
       .$onUpdate(() => new Date()),

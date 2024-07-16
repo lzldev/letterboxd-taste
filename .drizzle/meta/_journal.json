@@ -8,6 +8,13 @@
       "when": 1721124412751,
       "tag": "0000_freezing_onslaught",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1721128955022,
+      "tag": "0001_glossy_black_tarantula",
+      "breakpoints": true
     }
   ]
 }
