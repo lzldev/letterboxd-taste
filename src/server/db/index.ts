@@ -17,5 +17,5 @@ if (env.NODE_ENV !== "production") globalForDb.conn = conn;
 
 export const db = drizzle(conn, {
   schema,
-  logger: env.NODE_ENV !== "production",
+  // logger: env.NODE_ENV !== "production",
 });

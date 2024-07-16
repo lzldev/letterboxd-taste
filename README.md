@@ -12,4 +12,5 @@
 
 1. `pnpm install`
 0. Fill the `.env` file (Check the [`example env`](./.env.example))
+0. `pnpm db:seed`
 0. `pnpm dev`

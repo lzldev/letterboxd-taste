@@ -1,6 +1,6 @@
 import { db } from "~/server/db";
 import { scrapeUserProfile } from "../letterboxd/scrape/user/profile";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { users } from "~/server/db/schema";
 import { scrapeUserFilms } from "../letterboxd/scrape/user/films";
 import { scrapeNetwork } from "../letterboxd/scrape/user/network";
@@ -110,4 +110,49 @@ export async function WalkUserNetwork(
   }
 
   return [{ ...node, network }];
+}
+
+export async function UserNetworkFlatGraph(username: string) {
+  const sq = sql<{
+    name: string;
+    followers: string[];
+    following: string[];
+  }>`WITH RECURSIVE SearchGraph(name, followers, following, n) AS MATERIALIZED
+                     (SELECT name, network -> 'followers', network -> 'following', 0
+                      FROM ${users} current
+                      WHERE name = ${username}
+                      UNION DISTINCT SELECT t.name, t.network -> 'followers', t.network -> 'following', link.n + 1
+                      FROM ${users} t,
+                           SearchGraph link
+                      WHERE (link.followers ? t.name OR link.following ? t.name)
+                        AND link.n < 2)
+  SELECT DISTINCT f.name, f.followers, f.following
+  FROM SearchGraph F;`;
+
+  return await db.execute(sq);
+}
+
+export async function UserNetworkFlatMapGraph(username: string) {
+  const sq = sql`WITH RECURSIVE SearchGraph(name, followers, following, n) AS MATERIALIZED
+                     (SELECT name, network -> 'followers', network -> 'following', 0
+                      FROM ${users} current
+                      WHERE name = ${username}
+                      UNION DISTINCT SELECT t.name, t.network -> 'followers', t.network -> 'following', link.n + 1
+                      FROM ${users} t,
+                           SearchGraph link
+                      WHERE (link.followers ? t.name OR link.following ? t.name)
+                        AND link.n < 2)
+  SELECT DISTINCT jsonb_object_agg(F.name,jsonb_build_object('name',F.name,'followers', F.followers, 'following',F.following)) as graph
+  FROM SearchGraph F;`;
+
+  return await db.execute<{
+    graph: Record<
+      string,
+      {
+        name: string;
+        followers: string[];
+        following: string[];
+      }
+    >;
+  }>(sq);
 }

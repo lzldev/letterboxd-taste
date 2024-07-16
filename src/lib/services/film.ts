@@ -1,5 +1,6 @@
 import { db } from "~/server/db";
 import { scrapeFilm } from "../letterboxd/scrape/film/genres";
+import { Effect } from "effect";
 import { films, genres } from "~/server/db/schema";
 import { eq, inArray, sql } from "drizzle-orm";
 import {
@@ -128,6 +129,33 @@ export async function getOrScrapeManyFilmsAsMap(
       })
       .from(genres)
   ).at(0)!.map;
+
+  const p = (uri: string) =>
+    Effect.promise(async () => {
+      const film = await scrapeFilm(uri);
+      const genres = film.genres.map((name) => genreNameMap[name]!);
+      return {
+        uri,
+        title: film.title,
+        genres,
+      } satisfies typeof films.$inferInsert;
+    });
+
+  const d = (uri: string) =>
+    Effect.tryPromise({
+      try: async () => {
+        const film = await scrapeFilm(uri);
+        const genres = film.genres.map((name) => genreNameMap[name]!);
+        return {
+          uri,
+          title: film.title,
+          genres,
+        } satisfies typeof films.$inferInsert;
+      },
+      catch: () => {
+        return "nop";
+      },
+    });
 
   const inserts = await Promise.all(
     new Array(missing.length).fill(null).map(async (_, i) => {

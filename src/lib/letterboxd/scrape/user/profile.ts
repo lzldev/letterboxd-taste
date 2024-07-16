@@ -14,7 +14,7 @@ export async function scrapeUserProfile(name: string) {
 
   const displayNameEl = html(".displayname");
   const displayName = displayNameEl.text();
-  const username = displayNameEl.attr("title")!;
+  const username = displayNameEl.attr("title")!.toLowerCase();
 
   const avatarUrl = html(".profile-avatar .avatar img").attr("src");
   const stats = html(".profile-stats .value");

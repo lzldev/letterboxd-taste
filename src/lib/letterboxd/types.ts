@@ -1,6 +1,7 @@
 export type Network = {
   following: string[];
   followers: string[];
+  scraped: boolean;
 };
 
 export type DiaryEntry = { uri: string; rating: number; liked: boolean };

@@ -3,6 +3,7 @@
 
 import { sql } from "drizzle-orm";
 import {
+  customType,
   index,
   integer,
   jsonb,
@@ -22,17 +23,36 @@ import type { UserFilmsStats, Network } from "~/lib/letterboxd/types";
  */
 export const createTable = pgTableCreator((name) => `letterbox-taste_${name}`);
 
+export const customJsonb = customType<{ data: any }>({
+  dataType() {
+    return "jsonb";
+  },
+  toDriver(val) {
+    // console.log("🚀 ~ toDriver:", val);
+    return val as any;
+  },
+  fromDriver(value) {
+    // console.log("🚀 ~ fromDriver", value);
+    if (typeof value === "string") {
+      try {
+        return JSON.parse(value) as any;
+      } catch {}
+    }
+    return value as any;
+  },
+});
+
 export const users = createTable(
   "users",
   {
     id: serial("id").primaryKey(),
     username: varchar("name", { length: 100 }).notNull().unique(),
     displayName: varchar("displayName", { length: 100 }).notNull(),
-    network: jsonb("network")
+    network: customJsonb("network")
       .notNull()
       .$type<Network>()
       .default({ followers: [], following: [] }),
-    filmStats: jsonb("film_stats")
+    filmStats: customJsonb("film_stats")
       .notNull()
       .$type<UserFilmsStats>()
       .default({ avgRating: 0, watched: 0, films: [], rated: 0, liked: 0 }),

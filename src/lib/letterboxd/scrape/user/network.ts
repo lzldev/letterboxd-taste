@@ -1,13 +1,24 @@
 import { load } from "cheerio";
 import type { Network } from "../../types";
 
+const MAX_DEPTH = 2;
 const USERS_PER_PAGE = 25;
 
 export async function scrapeNetwork(
   name: string,
   followingCount: number,
   followerCount: number,
+  depth = 1,
 ) {
+  if (depth >= MAX_DEPTH) {
+    console.log("[MAX_DEPTH]", name);
+    return {
+      followers: [],
+      following: [],
+      scraped: false,
+    } satisfies Network;
+  }
+
   const followingPages = Math.ceil(followingCount / USERS_PER_PAGE);
   const followerPages = Math.ceil(followerCount / USERS_PER_PAGE);
 
@@ -27,6 +38,7 @@ export async function scrapeNetwork(
   return {
     followers: followers.flat(),
     following: following.flat(),
+    scraped: true,
   } satisfies Network;
 }
 

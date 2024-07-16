@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ScrapeUser, UpdateUser, WalkUserNetwork } from "~/lib/services/user";
+import { UserNetworkFlatMapGraph } from "~/lib/services/user";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -18,9 +18,9 @@ export async function GET(
     );
   }
 
-  const user = await ScrapeUser(username);
+  const graph = (await UserNetworkFlatMapGraph(username)).at(0)!.graph;
 
-  if (!user) {
+  if (!graph) {
     return NextResponse.json(
       {
         error: "User not found",
@@ -31,12 +31,7 @@ export async function GET(
     );
   }
 
-  const timerStr = `[WALK_NETWORK] ${username}`;
-  console.time(timerStr);
-  const network = await WalkUserNetwork(user, { userSet: new Set() });
-  console.timeEnd(timerStr);
-
   return NextResponse.json({
-    network,
+    graph,
   });
 }
