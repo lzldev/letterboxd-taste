@@ -52,4 +52,3 @@ export async function upsertUser(username: string) {
     .returning();
 
   return user.at(0)!;
-}
