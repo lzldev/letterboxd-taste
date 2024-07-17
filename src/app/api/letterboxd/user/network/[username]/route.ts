@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { ScrapeUser, UpdateUser, WalkUserNetwork } from "~/lib/services/user";
+import { ScrapeUser } from "~/lib/services/user";
+import { WalkUserNetwork } from "~/lib/services/network";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 

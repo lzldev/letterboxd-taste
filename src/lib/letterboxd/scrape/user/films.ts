@@ -19,7 +19,25 @@ export async function scrapeUserFilms(name: string, filmCount: number) {
     )
   ).flat();
 
-  const totalRating = films.reduce(
+  const totalRating = calculateTotalRating(films);
+
+  return {
+    films,
+    watched: films.length,
+    liked: totalRating.liked,
+    rated: totalRating.rated,
+    avgRating: totalRating.total / totalRating.rated,
+  } satisfies UserFilmsStats;
+}
+
+type TotalRating = {
+  total: number;
+  rated: number;
+  liked: number;
+};
+
+function calculateTotalRating(entries: FilmEntry[]): TotalRating {
+  return entries.reduce(
     (pv, cv) => {
       if (!cv.rating) {
         return pv;
@@ -35,20 +53,8 @@ export async function scrapeUserFilms(name: string, filmCount: number) {
       total: 0,
       rated: 0,
       liked: 0,
-    } as {
-      total: number;
-      rated: number;
-      liked: number;
-    },
+    } as TotalRating,
   );
-
-  return {
-    films,
-    watched: films.length,
-    liked: totalRating.liked,
-    rated: totalRating.rated,
-    avgRating: totalRating.total / totalRating.rated,
-  } satisfies UserFilmsStats;
 }
 
 async function scrapeFilmPage(name: string, page = 1): Promise<FilmEntry[]> {
