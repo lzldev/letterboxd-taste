@@ -1,10 +1,6 @@
-import { sql, inArray, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { array_agg, json_agg } from "~/lib/drizzle/aggregations";
-import {
-  getOrScrapeManyFilms,
-  getOrScrapeManyFilmsAsMap,
-} from "~/lib/services/film";
+import { getOrScrapeManyFilmsAsMap } from "~/lib/services/film";
 import { genreAverageMap } from "~/lib/services/genre";
 import { calculateUserTaste } from "~/lib/services/taste";
 import { ScrapeUser } from "~/lib/services/user";

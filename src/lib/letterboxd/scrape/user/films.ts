@@ -5,19 +5,16 @@
 
 import { load } from "cheerio";
 import type { FilmEntry, UserFilmsStats } from "../../types";
+import { Chunk, Effect, Stream } from "effect";
 
 const FILMS_PER_PAGE = 72;
 
 export async function scrapeUserFilms(name: string, filmCount: number) {
   const totalPages = Math.ceil(filmCount / FILMS_PER_PAGE);
 
-  const films = (
-    await Promise.all(
-      new Array(totalPages)
-        .fill(null)
-        .map((_, i) => scrapeFilmPage(name, i + 1)),
-    )
-  ).flat();
+  const films = await scrapeUserFilmsEffect(name, totalPages).pipe(
+    Effect.runPromise,
+  );
 
   const totalRating = calculateTotalRating(films);
 
@@ -28,6 +25,20 @@ export async function scrapeUserFilms(name: string, filmCount: number) {
     rated: totalRating.rated,
     avgRating: totalRating.total / totalRating.rated,
   } satisfies UserFilmsStats;
+}
+
+function scrapeUserFilmsEffect(name: string, totalPages: number) {
+  return Stream.range(1, totalPages).pipe(
+    Stream.map((p) => Effect.promise(() => scrapeFilmPage(name, p))),
+    Stream.runCollect,
+    Effect.runSync,
+    Chunk.toArray,
+    (films) =>
+      Effect.all(films, {
+        concurrency: 10,
+      }),
+    Effect.map((films) => films.flat()),
+  );
 }
 
 type TotalRating = {
