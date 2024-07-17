@@ -1,6 +1,8 @@
 import { load } from "cheerio";
 import type { Network } from "../../types";
+import { Chunk, Effect, Stream } from "effect";
 
+const FOLLOWER_CONCURRENCY = 5;
 const MAX_DEPTH = 2;
 const USERS_PER_PAGE = 25;
 
@@ -11,7 +13,6 @@ export async function scrapeNetwork(
   depth = 1,
 ) {
   if (depth >= MAX_DEPTH) {
-    console.log("[MAX_DEPTH]", name);
     return {
       followers: [],
       following: [],
@@ -22,24 +23,34 @@ export async function scrapeNetwork(
   const followingPages = Math.ceil(followingCount / USERS_PER_PAGE);
   const followerPages = Math.ceil(followerCount / USERS_PER_PAGE);
 
-  const [followers, following] = await Promise.all([
-    Promise.all(
-      new Array(followerPages)
-        .fill(null)
-        .map((_, i) => scrapeFollowerPage(name, i + 1, "followers")),
-    ),
-    Promise.all(
-      new Array(followingPages)
-        .fill(null)
-        .map((_, i) => scrapeFollowerPage(name, i + 1, "following")),
-    ),
-  ]);
+  const [followers, following] = await Effect.all([
+    scrapeFollowerPageEffect(name, followerPages, "followers"),
+    scrapeFollowerPageEffect(name, followingPages, "following"),
+  ]).pipe(Effect.runPromise);
 
   return {
-    followers: followers.flat(),
-    following: following.flat(),
+    followers: followers,
+    following: following,
     scraped: true,
   } satisfies Network;
+}
+
+function scrapeFollowerPageEffect(
+  name: string,
+  pages: number,
+  type: "following" | "followers",
+) {
+  return Stream.range(1, pages).pipe(
+    Stream.map((n) => Effect.promise(() => scrapeFollowerPage(name, n, type))),
+    Stream.runCollect,
+    Effect.runSync,
+    Chunk.toArray,
+    (pages) =>
+      Effect.all(pages, {
+        concurrency: FOLLOWER_CONCURRENCY,
+      }),
+    Effect.map((pages) => pages.flat()),
+  );
 }
 
 async function scrapeFollowerPage(
@@ -47,6 +58,7 @@ async function scrapeFollowerPage(
   page: number,
   type: "following" | "followers",
 ) {
+  console.log(`${type} PAGE - ${page}`);
   const r = await fetch(`https://letterboxd.com/${name}/${type}/page/${page}`);
 
   if (r.status !== 200) {
