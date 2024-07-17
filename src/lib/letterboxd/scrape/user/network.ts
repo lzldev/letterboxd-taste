@@ -23,10 +23,15 @@ export async function scrapeNetwork(
   const followingPages = Math.ceil(followingCount / USERS_PER_PAGE);
   const followerPages = Math.ceil(followerCount / USERS_PER_PAGE);
 
-  const [followers, following] = await Effect.all([
-    scrapeFollowerPageEffect(name, followerPages, "followers"),
-    scrapeFollowerPageEffect(name, followingPages, "following"),
-  ]).pipe(Effect.runPromise);
+  const [followers, following] = await Effect.all(
+    [
+      scrapeFollowerPageEffect(name, followerPages, "followers"),
+      scrapeFollowerPageEffect(name, followingPages, "following"),
+    ],
+    {
+      concurrency: "unbounded",
+    },
+  ).pipe(Effect.runPromise);
 
   return {
     followers: followers,
@@ -58,7 +63,6 @@ async function scrapeFollowerPage(
   page: number,
   type: "following" | "followers",
 ) {
-  console.log(`${type} PAGE - ${page}`);
   const r = await fetch(`https://letterboxd.com/${name}/${type}/page/${page}`);
 
   if (r.status !== 200) {

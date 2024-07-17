@@ -1,6 +1,6 @@
 import { db } from "~/server/db";
-import { scrapeFilm } from "../letterboxd/scrape/film/genres";
-import { Effect } from "effect";
+import { scrapeFilmGenres } from "../letterboxd/scrape/film/genres";
+import { Array, Effect } from "effect";
 import { films, genres } from "~/server/db/schema";
 import { eq, inArray, sql } from "drizzle-orm";
 import {
@@ -28,7 +28,7 @@ export async function getOrScrapeFilm(uri: string): Promise<Film> {
 }
 
 export async function scrapeAndInsertFilm(uri: string): Promise<Film> {
-  const scrape = await scrapeFilm(uri);
+  const scrape = await scrapeFilmGenres(uri);
 
   const g = await db
     .select({
@@ -49,53 +49,7 @@ export async function scrapeAndInsertFilm(uri: string): Promise<Film> {
   return insert.at(0)!;
 }
 
-export async function getOrScrapeManyFilms(uri: string[]): Promise<Film[]> {
-  const query = (
-    await db
-      .select({
-        uris: array_agg(films.uri),
-        films: json_agg(films),
-      })
-      .from(films)
-      .where(inArray(films.uri, uri))
-  ).at(0)!;
-
-  const foundFilms = new Set(query.uris);
-  const missing = uri.filter((u) => !foundFilms.has(u));
-
-  if (missing.length === 0) {
-    return query.films;
-  }
-
-  const genreNameMap = (
-    await db
-      .select({
-        map: sql<
-          Record<string, number>
-        >`json_object_agg(${genres.name},${genres.id})`,
-      })
-      .from(genres)
-  ).at(0)!.map;
-
-  const inserts = await Promise.all(
-    new Array(missing.length).fill(null).map(async (_, i) => {
-      const uri = missing[i]!;
-      const film = await scrapeFilm(uri);
-      const genres = film.genres.map((name) => genreNameMap[name]!);
-      return {
-        uri,
-        title: film.title,
-        genres,
-      } satisfies typeof films.$inferInsert;
-    }),
-  );
-
-  const insert = await db.insert(films).values(inserts).returning();
-
-  return [...query.films, ...insert];
-}
-
-export async function getOrScrapeManyFilmsAsMap(
+export async function BulkScrapeFilmGenres(
   uri: string[],
 ): Promise<Record<string, PartialFilm>> {
   const query = (
@@ -130,37 +84,10 @@ export async function getOrScrapeManyFilmsAsMap(
       .from(genres)
   ).at(0)!.map;
 
-  const p = (uri: string) =>
+  const effects = Array.range(0, missing.length - 1).map((_, i) =>
     Effect.promise(async () => {
-      const film = await scrapeFilm(uri);
-      const genres = film.genres.map((name) => genreNameMap[name]!);
-      return {
-        uri,
-        title: film.title,
-        genres,
-      } satisfies typeof films.$inferInsert;
-    });
-
-  const d = (uri: string) =>
-    Effect.tryPromise({
-      try: async () => {
-        const film = await scrapeFilm(uri);
-        const genres = film.genres.map((name) => genreNameMap[name]!);
-        return {
-          uri,
-          title: film.title,
-          genres,
-        } satisfies typeof films.$inferInsert;
-      },
-      catch: () => {
-        return "nop";
-      },
-    });
-
-  const inserts = await Promise.all(
-    new Array(missing.length).fill(null).map(async (_, i) => {
       const uri = missing[i]!;
-      const film = await scrapeFilm(uri);
+      const film = await scrapeFilmGenres(uri);
       const genres = film.genres.map((name) => genreNameMap[name]!);
       return {
         uri,
@@ -170,9 +97,14 @@ export async function getOrScrapeManyFilmsAsMap(
     }),
   );
 
+  const inserts = await Effect.all(effects, {
+    concurrency: 20,
+  }).pipe(Effect.runPromise);
+
   const insert = await db.insert(films).values(inserts).returning({
     id: films.id,
   });
+
   const query2 = (
     await db
       .select({

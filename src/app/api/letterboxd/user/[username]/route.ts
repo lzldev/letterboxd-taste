@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { getOrScrapeManyFilmsAsMap } from "~/lib/services/film";
+import { BulkScrapeFilmGenres } from "~/lib/services/film";
 import { genreAverageMap } from "~/lib/services/genre";
 import { calculateUserTaste } from "~/lib/services/taste";
 import { ScrapeUser } from "~/lib/services/user";
@@ -25,10 +25,12 @@ export async function GET(
   }
 
   const user = await ScrapeUser(username);
-  const films = await getOrScrapeManyFilmsAsMap(
+
+  const films = await BulkScrapeFilmGenres(
     user.filmStats.films.map((film) => film.uri),
   );
   const genreMap = await genreAverageMap();
+
   const taste = calculateUserTaste(user.filmStats, films, genreMap);
 
   await db

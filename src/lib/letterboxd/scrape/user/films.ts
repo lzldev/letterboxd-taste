@@ -8,6 +8,7 @@ import type { FilmEntry, UserFilmsStats } from "../../types";
 import { Chunk, Effect, Stream } from "effect";
 
 const FILMS_PER_PAGE = 72;
+const USER_FILM_CONCURRENCY = 10;
 
 export async function scrapeUserFilms(name: string, filmCount: number) {
   const totalPages = Math.ceil(filmCount / FILMS_PER_PAGE);
@@ -35,7 +36,7 @@ function scrapeUserFilmsEffect(name: string, totalPages: number) {
     Chunk.toArray,
     (films) =>
       Effect.all(films, {
-        concurrency: 10,
+        concurrency: USER_FILM_CONCURRENCY,
       }),
     Effect.map((films) => films.flat()),
   );
