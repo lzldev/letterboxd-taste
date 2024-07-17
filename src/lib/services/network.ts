@@ -3,26 +3,15 @@ import { sql } from "drizzle-orm";
 import { users } from "~/server/db/schema";
 
 import { ScrapeUser, type User } from "./user";
-
-type WalkedNetwork = {
-  following: Connection[];
-  followers: Connection[];
-};
-
-type Connection = WalkedUser | UserRef;
-type UserRef = {
-  _ref: string;
-};
-
-type WalkedUser = Omit<User, "network"> & {
-  network?: WalkedNetwork;
-};
+import { Effect } from "effect";
+import { WalkedUser, WalkedNetwork, UserRef } from "../letterboxd/types";
 
 const MAX_DEPTH = 1;
 
 export async function WalkUserNetwork(
   node: User,
-  state: { userSet: Set<string> },
+  state: { userSet: Set<string>; films: Set<string> },
+  maxDepth: number,
   depth = 0,
 ): Promise<WalkedUser[]> {
   state.userSet.add(node.username);
@@ -37,25 +26,57 @@ export async function WalkUserNetwork(
     following: [],
   };
 
-  for (const follower of node.network.followers) {
-    if (state.userSet.has(follower)) {
-      network.followers.push({ _ref: follower } satisfies UserRef);
-      continue;
-    }
+  const followerEffects = node.network.followers.map((name) =>
+    Effect.tryPromise({
+      try: async () => {
+        if (state.userSet.has(name)) {
+          network.followers.push({ _ref: name } satisfies UserRef);
+          return;
+        }
 
-    const user = await ScrapeUser(follower);
-    network.followers.push(...(await WalkUserNetwork(user, state, depth + 1)));
-  }
+        const user = await ScrapeUser(name);
+        state.films = new Set(
+          user.filmStats.films
+            .map((f) => f.uri)
+            .concat(...state.films.values()),
+        );
+        network.followers.push(
+          ...(await WalkUserNetwork(user, state, maxDepth, depth + 1)),
+        );
+      },
+      catch(error) {
+        console.error(`Failed to fetch ${name} Page`, error);
+      },
+    }),
+  );
 
-  for (const follow of node.network.following) {
-    if (state.userSet.has(follow)) {
-      network.following.push({ _ref: follow } satisfies UserRef);
-      continue;
-    }
+  const followingEffects = node.network.following.map((name) =>
+    Effect.tryPromise({
+      try: async () => {
+        if (state.userSet.has(name)) {
+          network.following.push({ _ref: name } satisfies UserRef);
+          return;
+        }
 
-    const user = await ScrapeUser(follow);
-    network.following.push(...(await WalkUserNetwork(user, state, depth + 1)));
-  }
+        const user = await ScrapeUser(name);
+        state.films = new Set(
+          user.filmStats.films
+            .map((f) => f.uri)
+            .concat(...state.films.values()),
+        );
+        network.following.push(
+          ...(await WalkUserNetwork(user, state, maxDepth, depth + 1)),
+        );
+      },
+      catch(error) {
+        console.error(`Failed to fetch ${name} Page`, error);
+      },
+    }),
+  );
+
+  await Effect.all([...followerEffects, ...followingEffects], {
+    concurrency: 5,
+  }).pipe(Effect.runPromise);
 
   return [{ ...node, network }];
 }

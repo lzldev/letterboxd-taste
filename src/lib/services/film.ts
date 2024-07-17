@@ -9,6 +9,7 @@ import {
   json_build_object,
   json_object_agg,
 } from "../drizzle/aggregations";
+import { PartialFilmRecord } from "../letterboxd/types";
 
 export type Film = typeof films.$inferSelect;
 export type PartialFilm = {
@@ -51,7 +52,7 @@ export async function scrapeAndInsertFilm(uri: string): Promise<Film> {
 
 export async function BulkScrapeFilmGenres(
   uri: string[],
-): Promise<Record<string, PartialFilm>> {
+): Promise<PartialFilmRecord> {
   const query = (
     await db
       .select({

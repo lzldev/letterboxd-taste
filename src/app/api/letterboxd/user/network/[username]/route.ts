@@ -1,6 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { ScrapeUser } from "~/lib/services/user";
 import { WalkUserNetwork } from "~/lib/services/network";
+import { BulkScrapeFilmGenres } from "~/lib/services/film";
+import { classifyNetworkTaste, fetchNetworkTaste } from "~/lib/services/taste";
+import { genreAverageMap } from "~/lib/services/genre";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 
@@ -32,12 +35,20 @@ export async function GET(
     );
   }
 
-  const timerStr = `[WALK_NETWORK] ${username}`;
-  console.time(timerStr);
-  const network = await WalkUserNetwork(user, { userSet: new Set() });
-  console.timeEnd(timerStr);
+  console.time(`[WALK_NETWORK] ${username}`);
+  const state = { userSet: new Set<string>(), films: new Set<string>() };
+  const network = await WalkUserNetwork(user, state, 1);
+  console.timeEnd(`[WALK_NETWORK] ${username}`);
+
+  console.time("BULK SCRAPE FILMS");
+  const films = await BulkScrapeFilmGenres(Array.from(state.films.values()));
+  console.timeEnd("BULK SCRAPE FILMS");
+
+  await classifyNetworkTaste(network.at(0)!, films, await genreAverageMap());
+
+  const taste = await fetchNetworkTaste(username, 1);
 
   return NextResponse.json({
-    network,
+    taste,
   });
 }

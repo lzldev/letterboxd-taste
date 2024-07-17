@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { BulkScrapeFilmGenres } from "~/lib/services/film";
 import { genreAverageMap } from "~/lib/services/genre";
-import { calculateUserTaste } from "~/lib/services/taste";
+import { classifyUserTaste } from "~/lib/services/taste";
 import { ScrapeUser } from "~/lib/services/user";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema";
@@ -31,7 +31,7 @@ export async function GET(
   );
   const genreMap = await genreAverageMap();
 
-  const taste = calculateUserTaste(user.filmStats, films, genreMap);
+  const taste = classifyUserTaste(user.filmStats, films, genreMap);
 
   await db
     .update(users)
