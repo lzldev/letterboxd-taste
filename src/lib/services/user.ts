@@ -2,7 +2,7 @@ import { db } from "~/server/db";
 import { scrapeUserProfile } from "../letterboxd/scrape/user/profile";
 import { eq } from "drizzle-orm";
 import { users } from "~/server/db/schema";
-import { scrapeUserFilms } from "../letterboxd/scrape/user/films";
+import { scrapeCategoryFilms } from "../letterboxd/scrape/user/films";
 import { scrapeNetwork } from "../letterboxd/scrape/user/network";
 import { DAY_IN_MS } from "../constants";
 
@@ -30,7 +30,7 @@ export async function ScrapeUser(username: string) {
 
 export async function UpdateUser(username: string) {
   const profile = await scrapeUserProfile(username);
-  const films = await scrapeUserFilms(username, profile.films);
+  const films = await scrapeCategoryFilms(username, profile.films);
   const network = await scrapeNetwork(
     username,
     profile.following,

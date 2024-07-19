@@ -23,6 +23,12 @@ export type WalkedUser = Omit<User, "network"> & {
 
 export type DiaryEntry = { uri: string; rating: number; liked: boolean };
 
+export type TotalRating = {
+  total: number;
+  rated: number;
+  liked: number;
+};
+
 export type Diary = {
   total: number;
   avgRating: number;
