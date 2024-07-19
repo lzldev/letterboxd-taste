@@ -29,7 +29,7 @@ export async function GET(
 
   console.info(`[category] - ${route} - ${start} - ${count}`);
 
-  void scrapeCategoryFilms(route, start, count).catch((err) => {
+  const uris = await scrapeCategoryFilms(route, start, count).catch((err) => {
     console.error(err);
   });
 
@@ -37,6 +37,7 @@ export async function GET(
     message: "Starting",
     start,
     count,
+    uris,
     time: new Date().getTime(),
   });
 }
