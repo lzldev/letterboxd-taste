@@ -1,6 +1,6 @@
-import { load, text, type Element } from "cheerio";
+import { load, type Element } from "cheerio";
 import { parseIntFromCheerioEl } from "../utils";
-import { DiaryEntry } from "../../types";
+import type { DiaryEntry } from "../../types";
 
 export async function scrapeUserDiary(name: string, page = 1) {
   const r = await fetch(
@@ -63,15 +63,6 @@ export async function scrapeUserDiary(name: string, page = 1) {
   };
 }
 
-//prettier-ignore
-function ratingClassFromLink(linkEl: Element): string {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return (
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-    linkEl.parent!.parent!.next!.next!.next!.next!.children.at(3)!.children.at(1).attribs.class
-  );
-}
-
 function parseFilmUri(href: string): string {
   return href.split("/").at(3)!;
 }
@@ -86,4 +77,13 @@ function parseRatingClass(ratingClass: string): number {
   } catch (err) {}
 
   return rating;
+}
+
+//prettier-ignore
+function ratingClassFromLink(linkEl: Element): string {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return (
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    linkEl.parent!.parent!.next!.next!.next!.next!.children.at(3)!.children.at(1).attribs.class
+  );
 }

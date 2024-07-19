@@ -1,10 +1,11 @@
 import { load } from "cheerio";
 import type { Network } from "../../types";
 import { Chunk, Effect, Stream } from "effect";
-
-const FOLLOWER_CONCURRENCY = 5;
-const MAX_DEPTH = 2;
-const USERS_PER_PAGE = 25;
+import {
+  NETWORK_MAX_DEPTH,
+  NETWORK_USERS_PER_PAGE,
+  NETOWORK_FOLLOWER_CONCURRENCY,
+} from "~/lib/constants";
 
 export async function scrapeNetwork(
   name: string,
@@ -12,7 +13,7 @@ export async function scrapeNetwork(
   followerCount: number,
   depth = 1,
 ) {
-  if (depth >= MAX_DEPTH) {
+  if (depth >= NETWORK_MAX_DEPTH) {
     return {
       followers: [],
       following: [],
@@ -20,8 +21,8 @@ export async function scrapeNetwork(
     } satisfies Network;
   }
 
-  const followingPages = Math.ceil(followingCount / USERS_PER_PAGE);
-  const followerPages = Math.ceil(followerCount / USERS_PER_PAGE);
+  const followingPages = Math.ceil(followingCount / NETWORK_USERS_PER_PAGE);
+  const followerPages = Math.ceil(followerCount / NETWORK_USERS_PER_PAGE);
 
   const [followers, following] = await Effect.all(
     [
@@ -52,7 +53,7 @@ function scrapeFollowerPageEffect(
     Chunk.toArray,
     (pages) =>
       Effect.all(pages, {
-        concurrency: FOLLOWER_CONCURRENCY,
+        concurrency: NETOWORK_FOLLOWER_CONCURRENCY,
       }),
     Effect.map((pages) => pages.flat()),
   );

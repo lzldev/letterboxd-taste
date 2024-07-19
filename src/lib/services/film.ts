@@ -5,11 +5,10 @@ import { films, genres } from "~/server/db/schema";
 import { eq, inArray, sql } from "drizzle-orm";
 import {
   array_agg,
-  json_agg,
   json_build_object,
   json_object_agg,
 } from "../drizzle/aggregations";
-import { PartialFilmRecord } from "../letterboxd/types";
+import type { PartialFilmRecord } from "../letterboxd/types";
 
 export type Film = typeof films.$inferSelect;
 export type PartialFilm = {
@@ -70,6 +69,7 @@ export async function BulkScrapeFilmGenres(
 
   const foundFilms = new Set(query.uris);
   const missing = uri.filter((u) => !foundFilms.has(u));
+  console.log(`MISSING FILMS [${missing.length}]`);
 
   if (missing.length === 0) {
     return query.films;
@@ -86,16 +86,26 @@ export async function BulkScrapeFilmGenres(
   ).at(0)!.map;
 
   const effects = Array.range(0, missing.length - 1).map((_, i) =>
-    Effect.promise(async () => {
-      const uri = missing[i]!;
-      const film = await scrapeFilmGenres(uri);
-      const genres = film.genres.map((name) => genreNameMap[name]!);
-      return {
-        uri,
-        title: film.title,
-        genres,
-      } satisfies typeof films.$inferInsert;
-    }),
+    Effect.retry(
+      Effect.tryPromise({
+        try: async () => {
+          const uri = missing[i]!;
+          const film = await scrapeFilmGenres(uri);
+          const genres = film.genres.map((name) => genreNameMap[name]!);
+          return {
+            uri,
+            title: film.title,
+            genres,
+          } satisfies typeof films.$inferInsert;
+        },
+        catch(error) {
+          console.error(`ERROR FETCHING MOVIE ${missing[i]!}`, error);
+        },
+      }),
+      {
+        times: 1,
+      },
+    ),
   );
 
   const inserts = await Effect.all(effects, {

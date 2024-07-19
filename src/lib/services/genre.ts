@@ -3,13 +3,6 @@ import { db } from "~/server/db";
 import { genres } from "~/server/db/schema";
 import { json_build_object, json_object_agg } from "../drizzle/aggregations";
 
-export type GenreAverage = {
-  name: string;
-  total: number;
-  n: number;
-};
-export type GenreAverageMap = Record<string, GenreAverage>;
-
 export async function genreAverageMap() {
   return (
     await db

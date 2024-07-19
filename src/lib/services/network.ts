@@ -4,9 +4,7 @@ import { users } from "~/server/db/schema";
 
 import { ScrapeUser, type User } from "./user";
 import { Effect } from "effect";
-import { WalkedUser, WalkedNetwork, UserRef } from "../letterboxd/types";
-
-const MAX_DEPTH = 1;
+import type { WalkedUser, WalkedNetwork, UserRef } from "../letterboxd/types";
 
 export async function WalkUserNetwork(
   node: User,
@@ -15,7 +13,7 @@ export async function WalkUserNetwork(
   depth = 0,
 ): Promise<WalkedUser[]> {
   state.userSet.add(node.username);
-  if (depth >= MAX_DEPTH) {
+  if (depth >= maxDepth) {
     const n = node as unknown as WalkedUser;
     delete n.network;
     return [n];

@@ -6,9 +6,7 @@
 import { load } from "cheerio";
 import type { FilmEntry, UserFilmsStats } from "../../types";
 import { Chunk, Effect, Stream } from "effect";
-
-const FILMS_PER_PAGE = 72;
-const USER_FILM_CONCURRENCY = 10;
+import { FILMS_PER_PAGE, USER_FILM_CONCURRENCY } from "~/lib/constants";
 
 export async function scrapeUserFilms(name: string, filmCount: number) {
   const totalPages = Math.ceil(filmCount / FILMS_PER_PAGE);

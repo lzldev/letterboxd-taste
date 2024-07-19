@@ -1,6 +1,5 @@
 import { sql, type SQLWrapper, type SQL } from "drizzle-orm";
 import type { AnyPgTable, PgColumn, PgTable } from "drizzle-orm/pg-core";
-import { films } from "~/server/db/schema";
 
 export function json_agg<TTable extends PgTable>(col: TTable) {
   return sql<TTable["$inferSelect"][]>`coalesce(json_agg(${col}),'[]')`;
@@ -29,16 +28,6 @@ export function json_object_agg<
     >
   >`coalesce(json_object_agg(${col1},${col2}),'{}')`;
 }
-
-type Pair<K extends string = string, V extends SQLWrapper = SQLWrapper> = [
-  K,
-  V,
-];
-
-const d = json_build_object({
-  name: films.uri,
-  genres: films.genres,
-});
 
 export function json_build_object<const T extends Record<string, SQLWrapper>>(
   json: T,

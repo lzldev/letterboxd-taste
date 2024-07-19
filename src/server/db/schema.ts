@@ -6,7 +6,6 @@ import {
   customType,
   index,
   integer,
-  jsonb,
   pgTableCreator,
   serial,
   timestamp,
@@ -29,16 +28,16 @@ export const customJsonb = customType<{ data: any }>({
   },
   toDriver(val) {
     // console.log("🚀 ~ toDriver:", val);
-    return val as any;
+    return val as unknown;
   },
   fromDriver(value) {
     // console.log("🚀 ~ fromDriver", value);
     if (typeof value === "string") {
       try {
-        return JSON.parse(value) as any;
+        return JSON.parse(value) as unknown;
       } catch {}
     }
-    return value as any;
+    return value;
   },
 });
 
@@ -51,7 +50,7 @@ export const users = createTable(
     network: customJsonb("network")
       .notNull()
       .$type<Network>()
-      .default({ followers: [], following: [] }),
+      .default({ followers: [], following: [], scraped: false }),
     filmStats: customJsonb("film_stats")
       .notNull()
       .$type<UserFilmsStats>()

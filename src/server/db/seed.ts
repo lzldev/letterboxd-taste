@@ -1,5 +1,5 @@
 import { db } from ".";
-import { genres, posts } from "./schema";
+import { genres } from "./schema";
 
 const tvGenres = {
   genres: [

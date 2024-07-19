@@ -1,5 +1,5 @@
-import { PartialFilm } from "../services/film";
-import { User } from "../services/user";
+import type { PartialFilm } from "../services/film";
+import type { User } from "../services/user";
 
 export type Network = {
   following: string[];
@@ -42,6 +42,13 @@ export type UserFilmsStats = {
   liked: number;
   watched: number;
 };
+
+export type GenreAverage = {
+  name: string;
+  total: number;
+  n: number;
+};
+export type GenreAverageMap = Record<string, GenreAverage>;
 
 export type PartialFilmRecord = Record<string, PartialFilm>;
 

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { UserNetworkFlatMapGraph } from "~/lib/services/user";
+import { UserNetworkFlatMapGraph } from "~/lib/services/network";
 
 export const dynamic = "force-dynamic"; // defaults to auto
 

@@ -1,4 +1,4 @@
-import { type AnyNode, load, text } from "cheerio";
+import { load } from "cheerio";
 import { parseIntFromCheerioEl } from "../utils";
 
 export async function scrapeUserProfile(name: string) {

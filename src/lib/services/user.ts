@@ -4,8 +4,7 @@ import { eq } from "drizzle-orm";
 import { users } from "~/server/db/schema";
 import { scrapeUserFilms } from "../letterboxd/scrape/user/films";
 import { scrapeNetwork } from "../letterboxd/scrape/user/network";
-
-const DAY_IN_MS = 86400000;
+import { DAY_IN_MS } from "../constants";
 
 export type User = Awaited<ReturnType<typeof ScrapeUser>>;
 

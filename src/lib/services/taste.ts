@@ -1,15 +1,14 @@
 import { db } from "~/server/db";
 import type {
+  GenreAverageMap,
   PartialFilmRecord,
   TasteVector,
   UserFilmsStats,
   WalkedUser,
 } from "../letterboxd/types";
-import type { GenreAverageMap } from "./genre";
 import { users } from "~/server/db/schema";
 import { eq, sql } from "drizzle-orm";
 import { Effect } from "effect";
-import { number } from "zod";
 
 export function classifyUserTaste(
   profile: UserFilmsStats,
@@ -45,12 +44,13 @@ export async function classifyNetworkTaste(
   if (!userNode.network) {
     return;
   }
+
   const effects = userNode.network.followers
     .filter((c) => !("_ref" in c))
-    .concat(userNode.network.followers.filter((c) => !("_ref" in c)))
+    .concat(userNode.network.following.filter((c) => !("_ref" in c)))
     .map((user) =>
-      Effect.promise(() =>
-        classifyNetworkTaste(user as WalkedUser, films, map),
+      Effect.promise(
+        async () => await classifyNetworkTaste(user as WalkedUser, films, map),
       ),
     );
 
