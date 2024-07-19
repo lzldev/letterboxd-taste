@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { env } from "~/env";
 import { scrapeCategoryFilms } from "~/lib/letterboxd/scrape/category/films";
 
+export const maxDuration = 60;
+
 export async function GET(
   _req: NextRequest,
   { params: { category } }: { params: { category: string } },
