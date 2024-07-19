@@ -86,8 +86,8 @@ export const films = createTable(
   "films",
   {
     id: serial("id").primaryKey(),
-    title: varchar("title", { length: 100 }).notNull(),
-    uri: varchar("uri", { length: 100 }).notNull().unique(),
+    title: varchar("title", { length: 150 }).notNull(),
+    uri: varchar("uri", { length: 150 }).notNull().unique(),
     genres: integer("genres_ids")
       .array()
       .notNull()
